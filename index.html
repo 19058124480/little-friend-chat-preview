@@ -343,7 +343,7 @@
         <p class="chat-prompt">把想说的话写下来吧</p>
         <textarea id="message-input" aria-label="输入想说的话" placeholder="今天发生什么？或者突然想跟我说点什么……"></textarea>
         <div class="mood-area">
-          <p class="mood-label">拿不准怎么说？选一个更接近的心情也可以。</p>
+          <p class="mood-label">拿不准怎么说？点一个心情看我怎么回；再点一次换一句。</p>
           <div class="moods" role="group" aria-label="选择心情">
             <button class="mood" type="button" data-intent="miss_you" aria-pressed="false">想你 / 想听你说话</button>
             <button class="mood" type="button" data-intent="low" aria-pressed="false">心情低落</button>
@@ -383,8 +383,15 @@
       happy: { label: '想分享开心', responses: ['哈哈，发在微信里跟我分享分享呗', '真想跟你见面谈谈这件事'] }
     };
 
-    function chooseReply(intent, message = '') {
+    const replyCycleIndex = { miss_you: 0, low: 0, tired: 0, happy: 0 };
+
+    function chooseReply(intent, message = '', cycle = false) {
       const responses = replies[intent].responses;
+      if (cycle) {
+        const index = replyCycleIndex[intent] % responses.length;
+        replyCycleIndex[intent] = (index + 1) % responses.length;
+        return responses[index];
+      }
       const text = message.toLowerCase();
       const has = (words) => words.some((word) => text.includes(word));
 
@@ -399,11 +406,11 @@
       return responses[0];
     }
 
-    function showReply(intent, message = '', detail = '') {
+    function showReply(intent, message = '', detail = '', cycle = false) {
       const reply = replies[intent];
       if (!reply) return;
       replyLabel.textContent = reply.label;
-      replyText.textContent = chooseReply(intent, message);
+      replyText.textContent = chooseReply(intent, message, cycle);
       replyDetail.textContent = detail;
       replyCard.hidden = false;
       replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -424,7 +431,7 @@
         moodButtons.forEach((item) => item.setAttribute('aria-pressed', 'false'));
         button.setAttribute('aria-pressed', 'true');
         selectedIntent = button.dataset.intent;
-        showReply(selectedIntent);
+        showReply(selectedIntent, '', '', true);
       });
     });
 
