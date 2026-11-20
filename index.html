@@ -34,14 +34,6 @@
       font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
     }
 
-    .page-note {
-      width: min(1120px, calc(100% - 40px));
-      margin: 18px auto 0;
-      color: #899087;
-      font-size: 12px;
-      letter-spacing: .04em;
-    }
-
     .site-header {
       width: min(1120px, calc(100% - 40px));
       height: 72px;
@@ -260,15 +252,6 @@
       letter-spacing: .04em;
     }
 
-    .prototype-note {
-      width: min(700px, calc(100% - 40px));
-      margin: 20px auto 36px;
-      color: #a0a39a;
-      font-size: 11px;
-      line-height: 1.7;
-      text-align: center;
-    }
-
     @media (max-width: 850px) {
       main { padding-top: 54px; }
       .conversation-layout {
@@ -287,15 +270,14 @@
     }
 
     @media (max-width: 520px) {
-      .page-note, .site-header, main { width: calc(100% - 30px); }
-      .page-note { margin-top: 13px; font-size: 10px; }
+      .site-header, main { width: calc(100% - 30px); }
       .site-header { height: 59px; }
       .brand { font-size: 13px; }
       .header-label { font-size: 10px; }
       main { padding: 42px 0 35px; }
       .intro { margin-bottom: 27px; }
       .eyebrow { margin-bottom: 11px; font-size: 10px; }
-      h1 { font-size: clamp(30px, 9vw, 40px); }
+      h1 { font-size: clamp(20px, 6vw, 26px); white-space: nowrap; }
       .intro-copy { max-width: 320px; margin: 12px auto 0; font-size: 13px; }
       .conversation-layout { gap: 11px 12px; }
       .quote { max-width: 100%; min-height: 58px; padding: 11px 12px 10px; font-size: 12px; line-height: 1.5; }
@@ -315,12 +297,10 @@
       .gentle-hint { max-width: 145px; font-size: 10px; }
       .send-button { padding: 11px 13px; font-size: 12px; }
       .signoff { margin-top: 30px; font-size: 13px; }
-      .prototype-note { margin-top: 14px; font-size: 10px; }
     }
   </style>
 </head>
 <body>
-  <p class="page-note">首屏视觉草稿 · 可以继续一起调整</p>
   <header class="site-header">
     <div class="brand"><span class="brand-mark">♥</span><span>留给小朋友的一角</span></div>
     <span class="header-label">只给你留着的小小空间</span>
@@ -364,8 +344,6 @@
 
     <p class="signoff">今天也要好好照顾自己呀，小朋友。</p>
   </main>
-
-  <p class="prototype-note">这是一张首屏样式草稿。心情匹配、语音回应和称呼文案，等你确认内容后再接上。</p>
 
   <script>
     document.querySelectorAll('.mood').forEach((button) => {
