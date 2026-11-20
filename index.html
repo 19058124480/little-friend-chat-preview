@@ -243,6 +243,19 @@
     .send-button:hover { background: var(--green-dark); }
     .send-button span { font-size: 16px; }
 
+    .reply-card {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1px solid #dce8de;
+      border-radius: 13px;
+      background: #f0f5ef;
+    }
+
+    .reply-card[hidden] { display: none; }
+    .reply-label { margin: 0 0 7px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+    .reply-text { margin: 0; color: #34463e; font-family: Georgia, "Kaiti SC", "KaiTi", serif; font-size: 18px; line-height: 1.65; }
+    .reply-detail { margin: 8px 0 0; color: #7c857c; font-size: 11px; line-height: 1.6; }
+
     .signoff {
       margin: 42px auto 0;
       color: #858b82;
@@ -296,6 +309,8 @@
       .card-footer { align-items: flex-end; margin-top: 18px; }
       .gentle-hint { max-width: 145px; font-size: 10px; }
       .send-button { padding: 11px 13px; font-size: 12px; }
+      .reply-card { margin-top: 14px; padding: 14px; }
+      .reply-text { font-size: 16px; }
       .signoff { margin-top: 30px; font-size: 13px; }
     }
   </style>
@@ -325,19 +340,24 @@
           <span class="status">我在这儿</span>
         </div>
         <p class="chat-prompt">把想说的话写下来吧</p>
-        <textarea aria-label="输入想说的话" placeholder="开心的事、烦心的事，或者只是突然想我了……"></textarea>
+        <textarea id="message-input" aria-label="输入想说的话" placeholder="今天发生什么？或者突然想跟我说点什么……"></textarea>
         <div class="mood-area">
-          <p class="mood-label">拿不准怎么说？选个更接近的心情也可以。</p>
+          <p class="mood-label">拿不准怎么说？选一个更接近的心情也可以。</p>
           <div class="moods" role="group" aria-label="选择心情">
-            <button class="mood" type="button" aria-pressed="false">有点想你</button>
-            <button class="mood" type="button" aria-pressed="false">心情低落</button>
-            <button class="mood" type="button" aria-pressed="false">有点累</button>
-            <button class="mood" type="button" aria-pressed="false">想分享开心</button>
+            <button class="mood" type="button" data-intent="miss_you" aria-pressed="false">想你 / 想听你说话</button>
+            <button class="mood" type="button" data-intent="low" aria-pressed="false">心情低落</button>
+            <button class="mood" type="button" data-intent="tired" aria-pressed="false">有点累</button>
+            <button class="mood" type="button" data-intent="happy" aria-pressed="false">想分享开心</button>
           </div>
         </div>
         <div class="card-footer">
           <p class="gentle-hint">不用想好怎么说，<br>想到哪儿就说到哪儿。</p>
-          <button class="send-button" type="button">说给我听 <span aria-hidden="true">↗</span></button>
+          <button id="send-button" class="send-button" type="button">看看我会怎么回 <span aria-hidden="true">↗</span></button>
+        </div>
+        <div id="reply-card" class="reply-card" role="status" aria-live="polite" hidden>
+          <p id="reply-label" class="reply-label"></p>
+          <p id="reply-text" class="reply-text"></p>
+          <p id="reply-detail" class="reply-detail"></p>
         </div>
       </div>
     </section>
@@ -346,11 +366,84 @@
   </main>
 
   <script>
-    document.querySelectorAll('.mood').forEach((button) => {
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const replyCard = document.getElementById('reply-card');
+    const replyLabel = document.getElementById('reply-label');
+    const replyText = document.getElementById('reply-text');
+    const replyDetail = document.getElementById('reply-detail');
+    const moodButtons = [...document.querySelectorAll('.mood')];
+    let selectedIntent = null;
+
+    const replies = {
+      miss_you: { label: '想你 / 想听你说话', responses: ['你说，我听着呢', '别搞了好吧，我要害羞了', '真的假的？'] },
+      low: { label: '心情低落', responses: ['怎么了，发生什么事了，要不要来找我', '我去找你，你直接跟我打语音'] },
+      tired: { label: '有点累', responses: ['累了？要不要和我去吃好吃的？走，我带你去', '我去找你，你直接跟我打语音'] },
+      happy: { label: '想分享开心', responses: ['哈哈，发在微信里跟我分享分享呗', '真想跟你见面谈谈这件事'] }
+    };
+
+    function chooseReply(intent, message = '') {
+      const responses = replies[intent].responses;
+      const text = message.toLowerCase();
+      const has = (words) => words.some((word) => text.includes(word));
+
+      if (intent === 'miss_you') {
+        if (has(['真的假的', '真的吗', '你信不信', '不会吧'])) return responses[2];
+        if (has(['想你', '想听', '声音', '好喜欢', '可爱', '好帅'])) return responses[1];
+        return responses[0];
+      }
+      if (intent === 'low' && has(['语音', '电话', '来找', '找我'])) return responses[1];
+      if (intent === 'tired' && has(['语音', '电话', '来找', '找我', '见面'])) return responses[1];
+      if (intent === 'happy' && has(['见面', '当面', '聊聊', '谈谈'])) return responses[1];
+      return responses[0];
+    }
+
+    function showReply(intent, message = '', detail = '') {
+      const reply = replies[intent];
+      if (!reply) return;
+      replyLabel.textContent = reply.label;
+      replyText.textContent = chooseReply(intent, message);
+      replyDetail.textContent = detail;
+      replyCard.hidden = false;
+    }
+
+    function classifyLocally(message) {
+      const text = message.toLowerCase();
+      const matches = (words) => words.some((word) => text.includes(word));
+      if (matches(['难过', '不开心', '心情不好', '低落', '烦', '委屈', '伤心', '哭', '难受', '压力'])) return 'low';
+      if (matches(['累', '疲惫', '困', '想睡', '没力气', '好累'])) return 'tired';
+      if (matches(['开心', '高兴', '好消息', '中奖了', '太好了', '分享', '激动', '成功'])) return 'happy';
+      if (matches(['想你', '想听你', '好想', '想念', '在干嘛', '找你', '跟你聊'])) return 'miss_you';
+      return null;
+    }
+
+    moodButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        document.querySelectorAll('.mood').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+        moodButtons.forEach((item) => item.setAttribute('aria-pressed', 'false'));
         button.setAttribute('aria-pressed', 'true');
+        selectedIntent = button.dataset.intent;
+        showReply(selectedIntent);
       });
+    });
+
+    messageInput.addEventListener('input', () => {
+      if (messageInput.value.trim()) {
+        selectedIntent = null;
+        moodButtons.forEach((item) => item.setAttribute('aria-pressed', 'false'));
+      }
+    });
+
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+      const intent = selectedIntent || classifyLocally(message);
+      if (intent) {
+        showReply(intent, message);
+        return;
+      }
+      replyLabel.textContent = message ? '再选个更接近的情景' : '先说一句，或点选一个情景';
+      replyText.textContent = message ? '我还没认出这句话对应哪种情景。点上面的一个选项，我就能给你合适的回应。' : '写一句想说的话，或者直接点上面的情景。';
+      replyDetail.textContent = '';
+      replyCard.hidden = false;
     });
   </script>
 </body>
