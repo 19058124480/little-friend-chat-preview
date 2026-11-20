@@ -351,14 +351,14 @@
             <button class="mood" type="button" data-intent="happy" aria-pressed="false">想分享开心</button>
           </div>
         </div>
-        <div class="card-footer">
-          <p class="gentle-hint">不用想好怎么说，<br>想到哪儿就说到哪儿。</p>
-          <button id="send-button" class="send-button" type="button">看看我会怎么回 <span aria-hidden="true">↗</span></button>
-        </div>
         <div id="reply-card" class="reply-card" role="status" aria-live="polite" hidden>
           <p id="reply-label" class="reply-label"></p>
           <p id="reply-text" class="reply-text"></p>
           <p id="reply-detail" class="reply-detail"></p>
+        </div>
+        <div class="card-footer">
+          <p class="gentle-hint">不用想好怎么说，<br>想到哪儿就说到哪儿。</p>
+          <button id="send-button" class="send-button" type="button">看看我会怎么回 <span aria-hidden="true">↗</span></button>
         </div>
       </div>
     </section>
@@ -413,7 +413,7 @@
       replyText.textContent = chooseReply(intent, message, cycle);
       replyDetail.textContent = detail;
       replyCard.hidden = false;
-      replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      replyCard.scrollIntoView(false);
     }
 
     function classifyLocally(message) {
@@ -453,7 +453,7 @@
       replyText.textContent = message ? '我还没认出这句话对应哪种情景。点上面的一个选项，我就能给你合适的回应。' : '写一句想说的话，或者直接点上面的情景。';
       replyDetail.textContent = '';
       replyCard.hidden = false;
-      replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      replyCard.scrollIntoView(false);
     });
   </script>
 </body>
