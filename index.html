@@ -249,6 +249,7 @@
       border: 1px solid #dce8de;
       border-radius: 13px;
       background: #f0f5ef;
+      scroll-margin-bottom: 24px;
     }
 
     .reply-card[hidden] { display: none; }
@@ -405,6 +406,7 @@
       replyText.textContent = chooseReply(intent, message);
       replyDetail.textContent = detail;
       replyCard.hidden = false;
+      replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function classifyLocally(message) {
@@ -444,6 +446,7 @@
       replyText.textContent = message ? '我还没认出这句话对应哪种情景。点上面的一个选项，我就能给你合适的回应。' : '写一句想说的话，或者直接点上面的情景。';
       replyDetail.textContent = '';
       replyCard.hidden = false;
+      replyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
   </script>
 </body>
